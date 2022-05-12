@@ -1,15 +1,65 @@
+# Required requests module
 import requests
-from requests.exceptions import HTTPError
 
-try:
-    response = requests.get('https://httpbin.org/get')
-    response.raise_for_status()
-    # access JSOn content
-    jsonResponse = response.json()
-    print("Entire JSON response")
-    print(jsonResponse)
+# This method fetches the weather data and returns the result
+def fetch_data(zip=None, city=None):
+    # base Url for fetching the weather
+    baseUrl = "http://api.openweathermap.org/data/2.5/weather"
 
-except HTTPError as http_err:
-    print(f'HTTP error occurred: {http_err}')
-except Exception as err:
-    print(f'Other error occurred: {err}')
+    # openweathermap.org API ID
+    API_ID = "8ceb6cdf867b1abe4a6b863939133618"
+    # check if user gave zip code or city name
+    if zip is not None:
+        baseUrl += "?zip="+str(zip)
+    else:
+        baseUrl += "?q="+str(city)
+    # Append API ID to end of Url
+    baseUrl += "&appid="+str(API_ID) +  "&units=imperial"
+    # make get requets using requests module
+    r = requests.get(baseUrl)
+    # return the response
+    return r
+#this method shows teh result in readbale for,
+def showResult(resp):
+    #this means request was successful
+    if resp.status_code == 200:
+        data= resp.json()
+        
+        print(f"""\n{data['name']} Weather Forecast:
+        Todays weather will be {data['weather'][0]['description']} with wind speed of {data['wind']['speed']}.
+        Current Temp is {data['main']['temp']}°F
+        Low Temp today is {data['main']['temp_min']}°F & High will be {data['main']['temp_max']}°F.
+        """)
+    else:
+        print("Error: ",resp.status_code, "Please try again...")
+#main method
+def main():
+    #repeat prgraom until user enters "3" for exit
+    while True:
+        #show the user choices
+        print("\nWelcome to my simple weather service")
+        inp =int(input("Please make a selection :\n1. By Zip Code\n2. By City Name\n3. Exit\n"))
+        if inp == 1:
+            #ask for zip code
+            try:
+                queryData=int(input("Enter zip code : "))
+                #make call to fetch fetch_data
+                resp= fetch_data(queryData,None)
+                showResult(resp)
+            except Exception as ex:
+                print("Error : ",ex)
+        elif inp == 2:
+            try:
+                queryData = input("Enter city name : ")
+                #make call to fetch fetch_data
+                resp= fetch_data(None,queryData)
+                showResult(resp)
+            except Exception as ex:
+                print("Error : ",ex)
+        elif inp==3:
+            break
+        else:
+            print("Invalid Choice..\n")
+if __name__=="__main__":
+    #call the main mtehod
+    main()
