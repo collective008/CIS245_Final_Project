@@ -1,65 +1,40 @@
-# Required requests module
+# import required modules
 import requests
 
-# This method fetches the weather data and returns the result
-def fetch_data(zip=None, city=None):
-    # base Url for fetching the weather
-    baseUrl = "http://api.openweathermap.org/data/2.5/weather"
+# function to request data
+def weather_data(query):
+   # my API key
+   api_key = "a2570a48c46a579344426474749a1b6f"
+   # base_url / variable to store url
+   base_url = "http://api.openweathermap.org/data/2.5/weather?"
 
-    # openweathermap.org API ID
-    API_ID = "8ceb6cdf867b1abe4a6b863939133618"
-    # check if user gave zip code or city name
-    if zip is not None:
-        baseUrl += "?zip="+str(zip)
-    else:
-        baseUrl += "?q="+str(city)
-    # Append API ID to end of Url
-    baseUrl += "&appid="+str(API_ID) +  "&units=imperial"
-    # make get requets using requests module
-    r = requests.get(baseUrl)
-    # return the response
-    return r
-#this method shows teh result in readbale for,
-def showResult(resp):
-    #this means request was successful
-    if resp.status_code == 200:
-        data= resp.json()
-        
-        print(f"""\n{data['name']} Weather Forecast:
-        Todays weather will be {data['weather'][0]['description']} with wind speed of {data['wind']['speed']}.
-        Current Temp is {data['main']['temp']}°F
-        Low Temp today is {data['main']['temp_min']}°F & High will be {data['main']['temp_max']}°F.
-        """)
-    else:
-        print("Error: ",resp.status_code, "Please try again...")
-#main method
-def main():
-    #repeat prgraom until user enters "3" for exit
-    while True:
-        #show the user choices
-        print("\nWelcome to my simple weather service")
-        inp =int(input("Please make a selection :\n1. By Zip Code\n2. By City Name\n3. Exit\n"))
-        if inp == 1:
-            #ask for zip code
-            try:
-                queryData=int(input("Enter zip code : "))
-                #make call to fetch fetch_data
-                resp= fetch_data(queryData,None)
-                showResult(resp)
-            except Exception as ex:
-                print("Error : ",ex)
-        elif inp == 2:
-            try:
-                queryData = input("Enter city name : ")
-                #make call to fetch fetch_data
-                resp= fetch_data(None,queryData)
-                showResult(resp)
-            except Exception as ex:
-                print("Error : ",ex)
-        elif inp==3:
-            break
-        else:
-            print("Invalid Choice..\n")
-if __name__=="__main__":
-    #call the main mtehod
-    main()
+   complete_url = base_url + "appid=" + api_key + "&units=imperial" + "&" + query
+   # response object
+   res=requests.get(complete_url);
+   return res.json();
+
+# function to display results
+def display_results(weathers,city):
+   print("{}'s temperature: {}°F ".format(city,weathers['main']['temp']))
+   print("Feels Like: {}°F".format(weathers['main']['feels_like']))
+   print("Humdity: {}%".format(weathers['main']['humidity']))
+   print("Wind speed: {} mph".format(weathers['wind']['speed']))
+   print("Weather: {}".format(weathers['weather'][0]['main']))
+   print("Condition: {}".format(weathers['weather'][0]['description']))
+
+# main function
+# Get user to input location/repeat
+while True:
+   city=input('Enter a zip code or city name or N to exit: ')
+   if city=='N':
+        break
+   else:
+      print()   
+   # try-except block
+   try:
+      query='q='+city;
+      w_data=weather_data(query);
+      display_results(w_data, city)
+      print('\nConnection sucessful...\n')
+   except:
+      print('Error... Location Unknown :(\n')
